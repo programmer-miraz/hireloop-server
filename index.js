@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from "cors"
-import { MongoClient } from 'mongodb';
+import { MongoClient, ObjectId } from 'mongodb';
 import 'dotenv/config'
 
 const app = express();
@@ -45,11 +45,46 @@ app.post("/jobs", async (req, res) => {
 
 })
 
-/// recruiter job data 
+/// recruiter all job data 
 app.get("/jobs", async (req, res) => {
-    const result = await jobs.find({}).toArray()
-    res.send(result)
-})
+    const { search, type, department, company } = req.query;
+    const query = {};
+    // Search by title, company, type and department
+    if (search) {
+        query.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { company: { $regex: search, $options: "i" } },
+            { type: { $regex: search, $options: "i" } },
+            { department: { $regex: search, $options: "i" } }
+        ];
+    }
+    // Filter by type
+    if (type) {
+        query.type = type;
+    }
+    if (company) {
+        query.company = company
+    }
+    // Filter by department
+    if (department) {
+        query.department = department;
+    }
+
+    const result = await jobs.find(query).toArray();
+
+    res.send(result);
+});
+
+
+
+// recuiter job data delete
+app.delete("/jobs/:id", async (req, res) => {
+    const { id } = req.params;
+    const result = await jobs.deleteOne({
+        _id: new ObjectId(id),
+    });
+    res.send(result);
+});
 
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);
