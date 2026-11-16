@@ -23,6 +23,7 @@ const connectedDB = await connectToMongoDB()
 const database = connectedDB.db("hire-loop")
 const users = database.collection("user")
 const jobs = database.collection("jobs")
+const application = database.collection("application")
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
@@ -75,6 +76,14 @@ app.get("/jobs", async (req, res) => {
     res.send(result);
 });
 
+// job dtails page
+app.get("/jobs/:id", async (req, res) => {
+    const { id } = req.params;
+    const result = await jobs.findOne({
+        _id: new ObjectId(id),
+    });
+    res.send(result);
+});
 
 
 // recuiter job data delete
@@ -85,7 +94,13 @@ app.delete("/jobs/:id", async (req, res) => {
     });
     res.send(result);
 });
+// application jara job apply korbe tader application
+app.post("/application", async (req, res) => {
+    const applications = req.body
+    const result = await application.insertOne(applications)
+    res.send(result)
 
+})
 app.listen(PORT, () => {
     console.log(`Example app listening on port ${PORT}`);
 });
